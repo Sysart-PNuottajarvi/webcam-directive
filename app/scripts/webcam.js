@@ -6,6 +6,7 @@
  *
  * @version: 3.0.0
  */
+
 'use strict';
 
 (function() {
@@ -35,6 +36,7 @@ angular.module('webcam', [])
         onStream: '&',
         onStreaming: '&',
         placeholder: '=',
+        cameraid: '=',
         config: '=channel'
       },
       link: function postLink($scope, element) {
@@ -120,8 +122,29 @@ angular.module('webcam', [])
             return;
           }
 
-          var mediaConstraint = { video: true, audio: false };
-          navigator.getMedia(mediaConstraint, onSuccess, onFailure);
+          var videoSources = [];
+
+          function gotSources(sourceInfos) {
+            for (var i = 0; i !== sourceInfos.length; ++i) {
+              var sourceInfo = sourceInfos[i];
+              if (sourceInfo.kind === 'video') {
+                videoSources.push(sourceInfo);
+              }
+            }
+
+            var mediaConstraint;
+
+            if($scope.cameraid){
+              mediaConstraint = { video: {optional: [{sourceId: videoSources[$scope.cameraid].id}]}, audio: false };
+            }else{
+              mediaConstraint = { video: true, audio: false };
+            }
+            navigator.getMedia(mediaConstraint, onSuccess, onFailure);
+          }
+
+          if (typeof MediaStreamTrack !== 'undefined'){
+            MediaStreamTrack.getSources(gotSources);
+          }
 
           /* Start streaming the webcam data when the video element can play
            * It will do it only once
