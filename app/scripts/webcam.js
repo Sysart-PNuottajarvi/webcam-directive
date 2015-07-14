@@ -143,12 +143,17 @@ angular.module('webcam', [])
           }
 
           if (typeof MediaStreamTrack !== 'undefined'){
-            MediaStreamTrack.getSources(gotSources);
+            if(typeof MediaStreamTrack.getSources !== 'undefined'){
+              MediaStreamTrack.getSources(gotSources);
+            }else{
+              var mediaConstraint = { video: true, audio: false };
+              navigator.getMedia(mediaConstraint, onSuccess, onFailure);
+            }
           }
 
-          /* Start streaming the webcam data when the video element can play
-           * It will do it only once
-           */
+          // Start streaming the webcam data when the video element can play
+          // It will do it only once
+
           videoElem.addEventListener('canplay', function() {
             if (!isStreaming) {
               var scale = width / videoElem.videoWidth;
